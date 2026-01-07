@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import { UserModel } from '../models/user.model';
+import { generateToken } from '../utils/jwt';
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -33,3 +34,35 @@ export const register = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Registration error' });
   }
 };
+
+
+export const login = async (req: Request, res: Response) => {
+    try {
+      const { email, password } = req.body;
+  
+      if (!email || !password) {
+        return res.status(400).json({ message: 'Email and password required' });
+      }
+  
+      const user = await UserModel.findOne({ email });
+  
+      if (!user || !user.isActive) {
+        return res.status(401).json({ message: 'Invalid credentials' });
+      }
+  
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+  
+      if (!isPasswordValid) {
+        return res.status(401).json({ message: 'Invalid credentials' });
+      }
+  
+      const token = generateToken({
+        id: user._id.toString(),
+        role: user.role,
+      });
+  
+      res.json({ token });
+    } catch (error) {
+      res.status(500).json({ message: 'Login error' });
+    }
+  };
