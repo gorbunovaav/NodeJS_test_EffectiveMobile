@@ -1,6 +1,7 @@
 import express from 'express';
 import { connectDB } from './config/db';
 import authRoutes from './routes/auth.routes';
+import userRoutes from './routes/user.routes';
 
 export const app = express();
 
@@ -13,3 +14,5 @@ app.use('/auth', authRoutes);
 app.get('/health', (_req, res) => {
     res.json({ status: 'ok' });
 });
+
+app.use('/users', userRoutes);
